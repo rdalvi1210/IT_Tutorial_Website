@@ -3,15 +3,26 @@ const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const path = require("path");
+const cookieParser = require("cookie-parser");
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// CORS configuration
+const allowedOrigins = ["http://localhost:5173"]; // Frontend URL (React app URL)
+
+app.use(
+  cors({
+    origin: "http://localhost:5173", // or your frontend URL
+    credentials: true, // ✅ important for sending cookies
+  })
+);
+
 // Middleware
-app.use(cors());
 app.use(express.json());
+app.use(cookieParser()); // required to read cookies
 
 // Serve uploaded images statically
 app.use("/uploads", express.static(path.join(__dirname, "public/uploads")));

@@ -10,12 +10,10 @@ const CoursesPage = () => {
   const [error, setError] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  const { isLoginOpen, setIsLoginOpen } = useContext(MyContext);
+  const { setIsLoginOpen, currentUser } = useContext(MyContext);
 
-  // Responsive cards per slide
   const [cardsPerSlide, setCardsPerSlide] = useState(3);
 
-  // Update cardsPerSlide on window resize for responsiveness
   useEffect(() => {
     const updateCardsPerSlide = () => {
       if (window.innerWidth < 640) setCardsPerSlide(1);
@@ -28,6 +26,7 @@ const CoursesPage = () => {
   }, []);
 
   const maxIndex = Math.max(0, courses.length - cardsPerSlide);
+
   const sliderRef = useRef(null);
 
   useEffect(() => {
@@ -67,7 +66,6 @@ const CoursesPage = () => {
     setCurrentIndex(0);
   }, [courses.length, cardsPerSlide]);
 
-  // Left/Right buttons handlers
   const handlePrev = () => {
     setCurrentIndex((prev) => (prev <= 0 ? maxIndex : prev - 1));
   };
@@ -75,7 +73,6 @@ const CoursesPage = () => {
     setCurrentIndex((prev) => (prev >= maxIndex ? 0 : prev + 1));
   };
 
-  // Touch swipe handlers
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
 
@@ -87,139 +84,148 @@ const CoursesPage = () => {
   };
   const handleTouchEnd = () => {
     const diff = touchStartX.current - touchEndX.current;
-    const swipeThreshold = 50;
-    if (diff > swipeThreshold) handleNext();
-    else if (diff < -swipeThreshold) handlePrev();
+    if (diff > 50) handleNext();
+    else if (diff < -50) handlePrev();
   };
 
-  if (loading)
-    return (
-      <div className="flex justify-center items-center min-h-[50vh]">
-        <p className="text-[#11a0d4] dark:text-gray-300">Loading courses...</p>
-      </div>
-    );
-
-  if (error)
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <p className="text-red-600 dark:text-red-400">{error}</p>
-      </div>
-    );
-
   const handleViewDetails = (course) => {
-    const token = localStorage.getItem("token");
-    if (!token) {
+    if (!currentUser) {
       setIsLoginOpen(true);
     } else {
       setSelectedCourse(course);
     }
   };
 
+  if (loading)
+    return (
+      <div className="flex justify-center items-center min-h-[50vh]">
+        <p className="text-main-red dark:text-gray-300">Loading courses...</p>
+      </div>
+    );
+
+  if (error)
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <p className="text-main-red dark:text-red-400">{error}</p>
+      </div>
+    );
+
   return (
     <section
       id="courses"
-      className="bg-white shadow-md md:py-16 py-8 px-4 sm:px-6 lg:px-8 relative md:min-h-screen"
+      className="bg-[#fff8f1]  relative md:min-h-[80vh] flex items-center justify-center"
     >
-      <div className="max-w-7xl mx-auto">
-        <h2 className="text-3xl md:text-5xl font-extrabold text-center text-[#11a0d4] dark:text-white mb-12 tracking-tight">
+      <div className="max-w-7xl m-auto w-full px-4 sm:px-6 lg:px-0">
+        <h2 className="text-3xl md:text-5xl font-extrabold text-black dark:text-white mb-5 mt-5 md:mb-4 tracking-tight">
           Explore Our Courses
         </h2>
 
         <div className="overflow-hidden relative">
-          {/* Left Chevron */}
-          <button
-            onClick={handlePrev}
-            aria-label="Previous courses"
-            className="absolute top-1/2 left-2 transform -translate-y-1/2 z-30 bg-white dark:bg-gray-900 rounded-full p-3 sm:p-2 shadow hover:bg-[#11a0d4] hover:text-white transition"
-          >
-            <ChevronLeft size={24} />
-          </button>
+          {/* Chevron Buttons */}
+          {courses.length > 0 && (
+            <>
+              <button
+                onClick={handlePrev}
+                aria-label="Previous courses"
+                className="absolute top-1/2 left-2 transform -translate-y-1/2 z-30 bg-white dark:bg-gray-900 rounded-full p-3 sm:p-2 shadow hover:bg-main-red hover:text-white transition"
+              >
+                <ChevronLeft size={24} />
+              </button>
+              <button
+                onClick={handleNext}
+                aria-label="Next courses"
+                className="absolute top-1/2 right-2 transform -translate-y-1/2 z-30 bg-white dark:bg-gray-900 rounded-full p-3 sm:p-2 shadow hover:bg-main-red hover:text-white transition"
+              >
+                <ChevronRight size={24} />
+              </button>
+            </>
+          )}
 
-          {/* Right Chevron */}
-          <button
-            onClick={handleNext}
-            aria-label="Next courses"
-            className="absolute top-1/2 right-2 transform -translate-y-1/2 z-30 bg-white dark:bg-gray-900 rounded-full p-3 sm:p-2 shadow hover:bg-[#11a0d4] hover:text-white transition"
-          >
-            <ChevronRight size={24} />
-          </button>
+          {/* Course Slider */}
+          {courses.length > 0 ? (
+            <div
+              ref={sliderRef}
+              className="flex transition-transform duration-500 py-2"
+              style={{
+                width: `${(courses.length * 100) / cardsPerSlide}%`,
+                transform: `translateX(-${
+                  (currentIndex * 100) / courses.length
+                }%)`,
+              }}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+            >
+              {courses.map((course) => {
+                const { id, title, description, category, imageUrl, duration } =
+                  course;
+                return (
+                  <article
+                    key={id}
+                    className="flex-shrink-0 mx-2"
+                    style={{
+                      width: `${100 / courses.length - 1.2}%`,
+                      minWidth: "280px",
+                    }}
+                    onClick={() => handleViewDetails(course)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        handleViewDetails(course);
+                      }
+                    }}
+                    aria-label={`View details about ${title}`}
+                  >
+                    <div className="flex flex-col bg-white dark:bg-gray-800 rounded-3xl shadow-md hover:shadow-2xl transition-shadow duration-300 cursor-pointer">
+                      <div className="relative overflow-hidden rounded-t-3xl">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleViewDetails(course);
+                          }}
+                          className="absolute top-4 right-4 px-5 py-2 bg-main-red text-white rounded-full font-semibold hover:bg-hover-red transition text-sm sm:text-base cursor-pointer z-20 shadow-lg"
+                          aria-label={`View details of ${title}`}
+                        >
+                          View Details
+                        </button>
 
-          <div
-            ref={sliderRef}
-            className="flex transition-transform duration-500"
-            style={{
-              width: `${(courses.length * 100) / cardsPerSlide}%`,
-              transform: `translateX(-${
-                (currentIndex * 100) / courses.length
-              }%)`,
-            }}
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-          >
-            {courses.map((course) => {
-              const { id, title, description, category, imageUrl, duration } =
-                course;
-              return (
-                <article
-                  key={id}
-                  className="flex-shrink-0"
-                  style={{
-                    width: `${100 / courses.length}%`,
-                    minWidth: "280px",
-                  }}
-                  onClick={() => handleViewDetails(course)}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      handleViewDetails(course);
-                    }
-                  }}
-                  aria-label={`View details about ${title}`}
-                >
-                  <div className="flex flex-col bg-white dark:bg-gray-800 rounded-3xl shadow-md hover:shadow-2xl transition-shadow duration-300 cursor-pointer mx-2">
-                    <div className="relative overflow-hidden rounded-t-3xl">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleViewDetails(course);
-                        }}
-                        className="absolute top-4 right-4 px-5 py-2 bg-[#11a0d4] text-white rounded-full font-semibold hover:bg-[#f0bb87] transition text-sm sm:text-base cursor-pointer z-20 shadow-lg"
-                        aria-label={`View details of ${title}`}
-                      >
-                        View Details
-                      </button>
+                        <img
+                          src={`http://localhost:5000${imageUrl}`}
+                          alt={`${title} banner`}
+                          className="w-full h-48 sm:h-56 object-cover transition-transform duration-300 hover:scale-105"
+                          loading="lazy"
+                        />
+                      </div>
 
-                      <img
-                        src={`http://localhost:5000${imageUrl}`}
-                        alt={`${title} banner`}
-                        className="w-full h-48 sm:h-56 object-cover transition-transform duration-300 hover:scale-105"
-                        loading="lazy"
-                      />
-                    </div>
+                      <div className="p-6 flex flex-col flex-grow">
+                        <h3 className="text-xl sm:text-2xl font-semibold text-main-red dark:text-indigo-400 mb-3">
+                          {title}
+                        </h3>
 
-                    <div className="p-6 flex flex-col flex-grow">
-                      <h3 className="text-xl sm:text-2xl font-semibold text-[#11a0d4] dark:text-indigo-400 mb-3">
-                        {title}
-                      </h3>
+                        <p className="text-gray-700 dark:text-gray-300 flex-grow leading-relaxed text-sm sm:text-base mb-4 line-clamp-2">
+                          {description}
+                        </p>
 
-                      <p className="text-gray-700 dark:text-gray-300 flex-grow leading-relaxed text-sm sm:text-base mb-4 line-clamp-2">
-                        {description}
-                      </p>
-
-                      <div className="flex items-center justify-between text-gray-600 dark:text-gray-400 text-sm sm:text-base font-medium mb-2">
-                        <span>⏳ Duration: {duration}</span>
-                        <span className="inline-block bg-indigo-100 text-[#11a0d4] dark:bg-indigo-800 dark:text-white px-3 py-1 rounded-full">
-                          {category}
-                        </span>
+                        <div className="flex items-center justify-between text-gray-600 dark:text-gray-400 text-sm sm:text-base font-medium mb-2">
+                          <span>⏳ Duration: {duration}</span>
+                          <span className="inline-block bg-indigo-100 text-main-red dark:bg-indigo-800 dark:text-white px-3 py-1 rounded-full">
+                            {category}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </article>
-              );
-            })}
-          </div>
+                  </article>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="flex items-center justify-center w-full min-h-[24rem]">
+              <h2 className="text-2xl md:text-3xl font-semibold text-gray-500 dark:text-gray-400 text-center">
+                No courses available
+              </h2>
+            </div>
+          )}
         </div>
       </div>
 
@@ -229,7 +235,6 @@ const CoursesPage = () => {
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4"
           role="dialog"
           aria-modal="true"
-          aria-labelledby="modal-title"
           onClick={closeModal}
         >
           <div
@@ -238,7 +243,7 @@ const CoursesPage = () => {
           >
             <button
               onClick={closeModal}
-              className="absolute cursor-pointer top-5 right-5 text-gray-600 dark:text-gray-300 hover:text-[#11a0d4] dark:hover:text-[#c9b8a8] text-4xl font-extrabold leading-none transition"
+              className="absolute cursor-pointer top-5 right-5 text-gray-600 dark:text-gray-300 hover:text-main-red dark:hover:text-hover-red text-4xl font-extrabold leading-none transition"
               aria-label="Close modal"
             >
               &times;
@@ -253,14 +258,11 @@ const CoursesPage = () => {
               />
 
               <div className="flex flex-col flex-grow">
-                <h3
-                  id="modal-title"
-                  className="text-3xl sm:text-4xl font-extrabold text-[#11a0d4] dark:text-[#ecd7c3] mb-4"
-                >
+                <h3 className="text-3xl sm:text-4xl font-extrabold text-main-red dark:text-[#ecd7c3] mb-4">
                   {selectedCourse.title}
                 </h3>
 
-                <span className="inline-block bg-indigo-100 text-[#11a0d4] dark:bg-indigo-800 dark:text-white text-sm font-semibold px-4 py-2 rounded-full mb-4 w-max">
+                <span className="inline-block bg-indigo-100 text-main-red dark:bg-indigo-800 dark:text-white text-sm font-semibold px-4 py-2 rounded-full mb-4 w-max">
                   {selectedCourse.category}
                 </span>
 
@@ -272,32 +274,20 @@ const CoursesPage = () => {
 
             <hr className="my-6 border-gray-300 dark:border-gray-600" />
 
-            <button
-              onClick={closeModal}
-              className="mt-2 w-full cursor-pointer sm:w-auto px-8 py-3 bg-[#11a0d4] text-white rounded-xl font-semibold hover:bg-[#845326] transition"
-            >
-              Close
-            </button>
+            <div className="flex flex-wrap justify-center sm:justify-start gap-4">
+              {selectedCourse.technologies &&
+                selectedCourse.technologies.map((tech, i) => (
+                  <span
+                    key={i}
+                    className="bg-main-red text-white rounded-full px-5 py-2 text-base cursor-default select-none"
+                  >
+                    {tech}
+                  </span>
+                ))}
+            </div>
           </div>
         </div>
       )}
-
-      {/* Animation style */}
-      <style jsx>{`
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.3s ease forwards;
-        }
-      `}</style>
     </section>
   );
 };

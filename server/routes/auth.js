@@ -3,6 +3,7 @@ const router = express.Router();
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const authenticate = require("../middleware/authMiddleware");
 
 // Register
 router.post("/register", async (req, res) => {
@@ -22,40 +23,56 @@ router.post("/register", async (req, res) => {
 });
 
 // Login
+// Login Route
+
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
+
   try {
     const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ message: "Invalid credentials" });
+    if (!user) return res.status(400).json({ message: "User not found" });
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch)
       return res.status(400).json({ message: "Invalid credentials" });
 
-    // Create JWT token
     const token = jwt.sign(
       { id: user._id, name: user.name, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
+      { expiresIn: "1h" }
     );
 
-    // Send token + user info
+    // Set JWT token in httpOnly cookie
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production", // true in production
+      sameSite: "Strict",
+      maxAge: 3600000, // 1 hour
+    });
+
+    // Also send token in response JSON
     res.status(200).json({
       message: "Login successful",
-      token,
-      user: {
-        id: user._id,
-        name: user.name,
-        role: user.role,
-      },
+      token: token, // <-- here you send token explicitly
+      user: { name: user.name, role: user.role },
     });
   } catch (err) {
-    res.status(500).json({ message: "Server error", error: err.message });
+    console.error("Login error:", err);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
+router.post("/logout", (req, res) => {
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "Strict",
+  });
+  res.status(200).json({ message: "Logged out successfully" });
+});
+
 // GET /api/users
-router.get("/", async (req, res) => {
+router.get("/users",authenticate, async (req, res) => {
   try {
     const users = await User.find().select("-password"); // exclude passwords
     res.json(users);
@@ -65,7 +82,7 @@ router.get("/", async (req, res) => {
 });
 
 // DELETE /api/users/:id
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", authenticate, async (req, res) => {
   try {
     const deletedUser = await User.findByIdAndDelete(req.params.id);
     if (!deletedUser) {
@@ -78,7 +95,7 @@ router.delete("/:id", async (req, res) => {
 });
 
 // PUT /api/users/make-admin/:id
-router.put("/make-admin/:id", async (req, res) => {
+router.put("/make-admin/:id", authenticate, async (req, res) => {
   try {
     const updatedUser = await User.findByIdAndUpdate(
       req.params.id,

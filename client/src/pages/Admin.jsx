@@ -1,20 +1,20 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { toast } from "react-hot-toast"; // Import toast
-import { FaTrash } from "react-icons/fa"; // Importing Lucid React icons
-import { MdAdminPanelSettings } from "react-icons/md"; // Importing Admin Panel Icon
+import { toast } from "react-hot-toast";
+import { FaTrash } from "react-icons/fa";
+import { MdAdminPanelSettings } from "react-icons/md";
 
 const Admin = () => {
   const [courses, setCourses] = useState([]);
   const [certificates, setCertificates] = useState([]);
-  const [placements, setPlacements] = useState([]); // State for placements
+  const [placements, setPlacements] = useState([]);
   const [users, setUsers] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isCourseModalOpen, setIsCourseModalOpen] = useState(false);
   const [isCertificateModalOpen, setIsCertificateModalOpen] = useState(false);
-  const [isPlacementModalOpen, setIsPlacementModalOpen] = useState(false); // State for placement modal visibility
+  const [isPlacementModalOpen, setIsPlacementModalOpen] = useState(false);
 
   const [newCourse, setNewCourse] = useState({
     title: "",
@@ -40,25 +40,35 @@ const Admin = () => {
 
   const [searchUsers, setSearchUsers] = useState("");
   const [searchReviews, setSearchReviews] = useState("");
-  const [editId, setEditId] = useState(null); // To track the ID of the item being edited
-  const [editType, setEditType] = useState(""); // To track the type of item being edited
+  const [editId, setEditId] = useState(null);
+  const [editType, setEditType] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [coursesRes, usersRes, reviewsRes, certsRes, placementsRes] =
           await Promise.all([
-            axios.get("http://localhost:5000/api/courses"),
-            axios.get("http://localhost:5000/api/auth"),
-            axios.get("http://localhost:5000/api/reviews"),
-            axios.get("http://localhost:5000/api/certificates"),
-            axios.get("http://localhost:5000/api/placements"), // Fetch placements
+            axios.get("http://localhost:5000/api/courses", {
+              withCredentials: true,
+            }),
+            axios.get("http://localhost:5000/api/auth/users", {
+              withCredentials: true,
+            }),
+            axios.get("http://localhost:5000/api/reviews", {
+              withCredentials: true,
+            }),
+            axios.get("http://localhost:5000/api/certificates", {
+              withCredentials: true,
+            }),
+            axios.get("http://localhost:5000/api/placements", {
+              withCredentials: true,
+            }),
           ]);
         setCourses(coursesRes.data);
         setUsers(usersRes.data);
         setReviews(reviewsRes.data);
         setCertificates(certsRes.data);
-        setPlacements(placementsRes.data); // Set placements data
+        setPlacements(placementsRes.data);
         setLoading(false);
       } catch (err) {
         setError("Failed to fetch data");
@@ -72,7 +82,7 @@ const Admin = () => {
     e.preventDefault();
     const { title, description, duration, category } = newCourse;
     if (!title || !description || !duration || !category)
-      return toast.error("Please fill all fields."); // Use toast for error
+      return toast.error("Please fill all fields.");
 
     try {
       const formData = new FormData();
@@ -87,6 +97,7 @@ const Admin = () => {
             formData,
             {
               headers: { "Content-Type": "multipart/form-data" },
+              withCredentials: true,
             }
           )
         : await axios.post(
@@ -94,6 +105,7 @@ const Admin = () => {
             formData,
             {
               headers: { "Content-Type": "multipart/form-data" },
+              withCredentials: true,
             }
           );
 
@@ -110,7 +122,7 @@ const Admin = () => {
         `${editId ? "Course updated" : "Course added"} successfully`
       );
     } catch (err) {
-      toast.error("Error adding/updating course"); // Use toast for error
+      toast.error("Error adding/updating course");
     }
   };
 
@@ -118,7 +130,7 @@ const Admin = () => {
     e.preventDefault();
     const { title, issuer, description, issueDate } = newCertificate;
     if (!title || !issuer || !description || !issueDate || !certificateFile)
-      return toast.error("Please fill all fields."); // Use toast for error
+      return toast.error("Please fill all fields.");
 
     try {
       const formData = new FormData();
@@ -133,6 +145,7 @@ const Admin = () => {
             formData,
             {
               headers: { "Content-Type": "multipart/form-data" },
+              withCredentials: true,
             }
           )
         : await axios.post(
@@ -140,6 +153,7 @@ const Admin = () => {
             formData,
             {
               headers: { "Content-Type": "multipart/form-data" },
+              withCredentials: true,
             }
           );
 
@@ -156,7 +170,7 @@ const Admin = () => {
         `${editId ? "Certificate updated" : "Certificate added"} successfully`
       );
     } catch (err) {
-      toast.error("Error adding/updating certificate"); // Use toast for error
+      toast.error("Error adding/updating certificate");
     }
   };
 
@@ -164,7 +178,7 @@ const Admin = () => {
     e.preventDefault();
     const { name, companyName, postName, image } = newPlacement;
     if (!name || !companyName || !postName || !image)
-      return toast.error("Please fill all fields."); // Use toast for error
+      return toast.error("Please fill all fields.");
 
     try {
       const formData = new FormData();
@@ -179,6 +193,7 @@ const Admin = () => {
             formData,
             {
               headers: { "Content-Type": "multipart/form-data" },
+              withCredentials: true,
             }
           )
         : await axios.post(
@@ -186,6 +201,7 @@ const Admin = () => {
             formData,
             {
               headers: { "Content-Type": "multipart/form-data" },
+              withCredentials: true,
             }
           );
 
@@ -204,7 +220,7 @@ const Admin = () => {
         `${editId ? "Placement updated" : "Placement added"} successfully`
       );
     } catch (err) {
-      toast.error("Error adding/updating placement"); // Use toast for error
+      toast.error("Error adding/updating placement");
     }
   };
 
@@ -237,44 +253,48 @@ const Admin = () => {
     const confirmMsg = `Are you sure you want to delete this ${type}?`;
     if (!window.confirm(confirmMsg)) return;
     try {
-      await axios.delete(`http://localhost:5000/api/${type}/${id}`);
+      await axios.delete(`http://localhost:5000/api/${type}/${id}`, {
+        withCredentials: true,
+      });
       if (type === "courses/delete")
         setCourses(courses.filter((c) => c._id !== id));
       if (type === "certificates/delete")
         setCertificates(certificates.filter((c) => c._id !== id));
       if (type === "placements/delete")
         setPlacements(placements.filter((p) => p._id !== id));
-      if (type === "auth") setUsers(users.filter((u) => u._id !== id));
+      if (type === "auth/users") setUsers(users.filter((u) => u._id !== id));
       if (type === "reviews") setReviews(reviews.filter((r) => r._id !== id));
-      toast.success(`${type} deleted successfully`); // Use toast for success
+      toast.success(`${type} deleted successfully`);
     } catch {
-      toast.error(`Failed to delete ${type}`); // Use toast for error
+      toast.error(`Failed to delete ${type}`);
     }
   };
 
   const handleMakeAdmin = async (id) => {
     try {
-      await axios.put(`http://localhost:5000/api/auth/make-admin/${id}`);
+      await axios.put(`http://localhost:5000/api/auth/make-admin/${id}`, null, {
+        withCredentials: true,
+      });
       setUsers(
         users.map((user) =>
           user._id === id ? { ...user, role: "admin" } : user
         )
       );
-      toast.success("User  promoted to admin successfully"); // Use toast for success
+      toast.success("User promoted to admin successfully");
     } catch {
-      toast.error("Failed to promote user to admin"); // Use toast for error
+      toast.error("Failed to promote user to admin");
     }
   };
 
   const loadEditData = (type, data) => {
     if (type === "course") {
       setNewCourse(data);
-      setImageFile(null); // Keep the image file as null to allow re-upload
+      setImageFile(null);
       setEditId(data._id);
       setIsCourseModalOpen(true);
     } else if (type === "certificate") {
       setNewCertificate(data);
-      setCertificateFile(null); // Keep the certificate file as null to allow re-upload
+      setCertificateFile(null);
       setEditId(data._id);
       setIsCertificateModalOpen(true);
     } else if (type === "placement") {
@@ -335,7 +355,7 @@ const Admin = () => {
                     <td className="border px-4 py-2">{user.role || "User "}</td>
                     <td className="border px-4 py-2 flex gap-2">
                       <button
-                        onClick={() => handleDelete("auth", user._id)}
+                        onClick={() => handleDelete("auth/users", user._id)}
                         className="text-red-500 text-2xl hover:text-red-700 cursor-pointer"
                       >
                         <FaTrash />
@@ -430,19 +450,13 @@ const Admin = () => {
         >
           Add Course
         </button>
-        {/* Modal for Adding/Editing Course */}
         {isCourseModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md">
             <div className="bg-white p-6 rounded-lg shadow-md max-w-md w-full">
               <h2 className="text-2xl font-semibold mb-4">
                 {editId ? "Edit Course" : "Add New Course"}
               </h2>
-              <form
-                onSubmit={
-                  editId ? handleAddOrEditCourse : handleAddOrEditCourse
-                }
-                className="grid gap-4"
-              >
+              <form onSubmit={handleAddOrEditCourse} className="grid gap-4">
                 <input
                   type="text"
                   placeholder="Title"
@@ -510,29 +524,33 @@ const Admin = () => {
           {courses.map((course) => (
             <div
               key={course._id}
-              className="border p-4 rounded shadow bg-white transition-transform transform hover:scale-105"
+              className="border p-4 rounded shadow hover:shadow-lg relative"
             >
               <img
                 src={`http://localhost:5000${course.imageUrl}`}
-                alt="Course"
-                className="w-full h-40 object-cover rounded mb-2"
+                alt={course.title}
+                className="w-full h-40 object-cover rounded mb-3"
               />
-              <h3 className="font-semibold text-lg">{course.title}</h3>
-              <p className="text-sm text-gray-500">
-                {course.category} | {course.duration}
+              <h3 className="text-xl font-semibold mb-1">{course.title}</h3>
+              <p className="text-sm mb-1">{course.description}</p>
+              <p className="text-sm font-semibold mb-1">
+                Duration: {course.duration}
               </p>
-              <div className="flex flex-col sm:flex-row justify-between mt-3">
+              <p className="text-sm font-semibold mb-2">
+                Category: {course.category}
+              </p>
+              <div className="flex gap-3 absolute top-2 right-2">
                 <button
                   onClick={() => loadEditData("course", course)}
-                  className="bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600 flex items-center justify-center mb-2 sm:mb-0"
+                  className="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600"
                 >
                   Edit
                 </button>
                 <button
                   onClick={() => handleDelete("courses/delete", course._id)}
-                  className="bg-red-500 text-white px-4 py-1 rounded hover:bg-red-600 flex items-center justify-center"
+                  className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
                 >
-                  <FaTrash className="mr-1" /> Delete
+                  Delete
                 </button>
               </div>
             </div>
@@ -540,7 +558,7 @@ const Admin = () => {
         </div>
       </section>
 
-      <hr className="my-8" />
+      <hr />
 
       {/* Add Certificate Section */}
       <section>
@@ -561,7 +579,6 @@ const Admin = () => {
         >
           Add Certificate
         </button>
-        {/* Modal for Adding/Editing Certificate */}
         {isCertificateModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md">
             <div className="bg-white p-6 rounded-lg shadow-md max-w-md w-full">
@@ -569,11 +586,7 @@ const Admin = () => {
                 {editId ? "Edit Certificate" : "Add New Certificate"}
               </h2>
               <form
-                onSubmit={
-                  editId
-                    ? handleAddOrEditCertificate
-                    : handleAddOrEditCertificate
-                }
+                onSubmit={handleAddOrEditCertificate}
                 className="grid gap-4"
               >
                 <input
@@ -614,6 +627,7 @@ const Admin = () => {
                 />
                 <input
                   type="date"
+                  placeholder="Issue Date"
                   value={newCertificate.issueDate}
                   onChange={(e) =>
                     setNewCertificate({
@@ -638,7 +652,7 @@ const Admin = () => {
                     Cancel
                   </button>
                   <button className="bg-orange-600 text-white py-2 px-4 rounded hover:bg-orange-700 cursor-pointer">
-                    {editId ? "Update Certificate" : "Add Certificate"}
+                    {editId ? "Update Certificate " : "Add Certificate"}
                   </button>
                 </div>
               </form>
@@ -652,30 +666,33 @@ const Admin = () => {
         <h2 className="text-2xl font-semibold mb-4">Certificates</h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {certificates.map((cert) => (
-            <div key={cert._id} className="border p-4 rounded shadow bg-white">
+            <div
+              key={cert._id}
+              className="border p-4 rounded shadow hover:shadow-lg relative"
+            >
               <img
-                src={`http://localhost:5000${
-                  cert.certificateUrl || cert.certificate
-                }`}
-                alt="Certificate"
-                className="w-full h-40 object-cover rounded mb-2"
+                src={`http://localhost:5000${cert.certificate}`}
+                alt={cert.title}
+                className="w-full h-40 object-cover rounded mb-3"
               />
-              <h3 className="font-semibold text-lg">{cert.title}</h3>
-              <p className="text-sm text-gray-500">
-                {cert.issuer} | {new Date(cert.issueDate).toLocaleDateString()}
+              <h3 className="text-xl font-semibold mb-1">{cert.title}</h3>
+              <p className="text-sm mb-1">Issuer: {cert.issuer}</p>
+              <p className="text-sm mb-1">{cert.description}</p>
+              <p className="text-sm font-semibold mb-2">
+                Issue Date: {new Date(cert.issueDate).toLocaleDateString()}
               </p>
-              <div className="flex flex-col sm:flex-row justify-between mt-3">
+              <div className="flex gap-3 absolute top-2 right-2">
                 <button
                   onClick={() => loadEditData("certificate", cert)}
-                  className="bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600 flex items-center justify-center mb-2 sm:mb-0"
+                  className="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600"
                 >
                   Edit
                 </button>
                 <button
                   onClick={() => handleDelete("certificates/delete", cert._id)}
-                  className="bg-red-500 text-white px-4 py-1 rounded hover:bg-red-600 flex items-center justify-center"
+                  className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
                 >
-                  <FaTrash className="mr-1" /> Delete
+                  Delete
                 </button>
               </div>
             </div>
@@ -683,7 +700,7 @@ const Admin = () => {
         </div>
       </section>
 
-      <hr className="my-8" />
+      <hr />
 
       {/* Add Placement Section */}
       <section>
@@ -703,19 +720,13 @@ const Admin = () => {
         >
           Add Placement
         </button>
-        {/* Modal for Adding/Editing Placement */}
         {isPlacementModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md">
             <div className="bg-white p-6 rounded-lg shadow-md max-w-md w-full">
               <h2 className="text-2xl font-semibold mb-4">
                 {editId ? "Edit Placement" : "Add New Placement"}
               </h2>
-              <form
-                onSubmit={
-                  editId ? handleAddOrEditPlacement : handleAddOrEditPlacement
-                }
-                className="grid gap-4"
-              >
+              <form onSubmit={handleAddOrEditPlacement} className="grid gap-4">
                 <input
                   type="text"
                   placeholder="Name"
@@ -769,7 +780,7 @@ const Admin = () => {
                     Cancel
                   </button>
                   <button className="bg-orange-600 text-white py-2 px-4 rounded hover:bg-orange-700 cursor-pointer">
-                    {editId ? "Update Placement" : "Add Placement"}
+                    {editId ? "Update Placement " : "Add Placement"}
                   </button>
                 </div>
               </form>
@@ -780,27 +791,25 @@ const Admin = () => {
 
       {/* Placements List */}
       <section>
-        <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 justify-items-center">
+        <h2 className="text-2xl font-semibold mb-4">Placements</h2>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {placements.map((placement) => (
             <div
               key={placement._id}
-              className="w-full max-w-xs border p-4 rounded-xl shadow-md bg-white text-center"
+              className="border p-4 rounded shadow hover:shadow-lg relative"
             >
               <img
                 src={`http://localhost:5000${placement.imageUrl}`}
                 alt={placement.name}
-                className="w-24 h-24 mx-auto object-cover rounded-full mb-3 border-2 border-[#f88922]"
+                className="w-full h-40 object-cover rounded mb-3"
               />
-              <h3 className="text-lg font-semibold text-gray-800">
-                {placement.name}
-              </h3>
-              <p className="text-sm text-gray-600">
-                {placement.companyName} <br /> {placement.postName}
-              </p>
-              <div className="flex m-auto justify-evenly">
+              <h3 className="text-xl font-semibold mb-1">{placement.name}</h3>
+              <p className="text-sm mb-1">Company: {placement.companyName}</p>
+              <p className="text-sm mb-1">Post: {placement.postName}</p>
+              <div className="flex gap-3 absolute top-2 right-2">
                 <button
                   onClick={() => loadEditData("placement", placement)}
-                  className="mt-4 w-[48%] cursor-pointer bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600 flex items-center justify-center"
+                  className="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600"
                 >
                   Edit
                 </button>
@@ -808,17 +817,15 @@ const Admin = () => {
                   onClick={() =>
                     handleDelete("placements/delete", placement._id)
                   }
-                  className="mt-4 w-[48%] cursor-pointer bg-red-500 text-white px-4 py-1 rounded hover:bg-red-600 flex items-center justify-center"
+                  className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
                 >
-                  <FaTrash /> Delete
+                  Delete
                 </button>
               </div>
             </div>
           ))}
         </div>
       </section>
-
-      <hr className="my-8" />
     </div>
   );
 };

@@ -7,7 +7,7 @@ const CertificationsPage = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedCert, setSelectedCert] = useState(null);
   const scrollRef = useRef(null);
-  const { setIsLoginOpen } = useContext(MyContext);
+  const { setIsLoginOpen, currentUser } = useContext(MyContext);
   const isLoggedIn = Boolean(localStorage.getItem("token"));
 
   useEffect(() => {
@@ -43,7 +43,7 @@ const CertificationsPage = () => {
       ) {
         scrollContainer.scrollTo({ left: 0, behavior: "smooth" });
       } else {
-        scrollContainer.scrollBy({ left: 280, behavior: "smooth" });
+        scrollContainer.scrollBy({ left: 300, behavior: "smooth" });
       }
     }, 3500);
 
@@ -55,7 +55,7 @@ const CertificationsPage = () => {
   }, []);
 
   const openModal = (cert) => {
-    if (!isLoggedIn) {
+    if (!currentUser) {
       setIsLoginOpen(true);
       return;
     }
@@ -80,16 +80,16 @@ const CertificationsPage = () => {
     <>
       <section
         id="certifications"
-        className="bg-gradient-to-b from-white to-gray-50 shadow-sm  px-6 py-8 md:py-16"
+        className="bg-[#fff8f1] md:min-h-[80vh] flex justify-center items-center"
       >
-        <div className="max-w-7xl mx-auto">
-          <h2 className="text-3xl md:text-5xl font-extrabold text-[#11a0d4] dark:text-white mb-8 text-center tracking-tight drop-shadow-md select-none">
-            Placed Students Offer Letters
+        <div className="max-w-7xl w-full px-4">
+          <h2 className="text-3xl md:text-5xl font-extrabold text-black dark:text-white mb-5 mt-5 md:mb-0  tracking-tight drop-shadow-md select-none">
+            Our Students offer letter...
           </h2>
 
           <div
             ref={scrollRef}
-            className="flex space-x-6 overflow-x-auto py-6 px-2 scrollbar-hide scroll-smooth"
+            className="flex overflow-x-auto scroll-smooth snap-x snap-mandatory space-x-4 scrollbar-hide py-6"
             tabIndex={0}
             aria-label="Certificate slider"
           >
@@ -105,8 +105,7 @@ const CertificationsPage = () => {
                 }) => (
                   <div
                     key={_id}
-                    className="relative scroll-mx-6 flex-shrink-0 w-72 h-96 flex flex-col rounded-2xl shadow-xl transition-transform duration-300 hover:scale-105 bg-white dark:bg-gray-800 border border-[#11a0d4] dark:border-gray-700"
-                    style={{ scrollSnapAlign: "center" }}
+                    className="flex-shrink-0 snap-start w-full sm:w-[300px] min-w-[280px] bg-white dark:bg-gray-800 border border-main-red dark:border-gray-700 shadow-xl transition-transform duration-300 hover:scale-105 relative"
                   >
                     {/* View Button */}
                     <button
@@ -119,37 +118,40 @@ const CertificationsPage = () => {
                           issueDate,
                         })
                       }
-                      className="absolute cursor-pointer top-[40%] right-[40%] px-3 py-1 text-sm bg-[#11a0d4] text-white font-semibold rounded-lg shadow hover:bg-orange-600 transition"
+                      className="absolute top-[40%] left-1/2 -translate-x-1/2 px-3 py-1 text-sm bg-main-red text-white cursor-pointer font-semibold shadow hover:bg-orange-600 transition"
                       title="View Certificate"
                     >
                       View
                     </button>
 
-                    <div className="h-64 overflow-hidden rounded-t-2xl bg-gradient-to-tr from-yellow-100 via-yellow-50 to-yellow-100 shadow-inner">
+                    <div className="h-100 overflow-hidden bg-gradient-to-tr from-yellow-100 via-yellow-50 to-yellow-100 shadow-inner">
                       <img
                         src={`http://localhost:5000${certificate}`}
                         alt={`${title} certificate`}
-                        className="w-full h-full object-cover select-none pointer-events-none"
+                        className="w-full h-full object-cover object-center pointer-events-none select-none"
                         loading="lazy"
                         draggable={false}
                       />
                     </div>
-                    <div className="flex-1 p-5 bg-gradient-to-t from-black/90 via-black/50 to-transparent text-white rounded-b-2xl flex flex-col justify-end">
-                      <h4 className="text-lg font-semibold truncate">
-                        {title}
-                      </h4>
-                      <p className="text-sm truncate">{issuer}</p>
-                      <p className="text-xs italic opacity-80 select-text">
-                        Issued: {new Date(issueDate).toLocaleDateString()}
-                      </p>
-                    </div>
+
+                    {/* <div className="flex-1 p-5 bg-gradient-to-t from-black/90 via-black/60 to-transparent text-white flex flex-col justify-end min-h-[8rem]">
+                        <h4 className="text-lg font-semibold truncate">
+                          {title}
+                        </h4>
+                        <p className="text-sm truncate">{issuer}</p>
+                        <p className="text-xs italic opacity-80">
+                          Issued: {new Date(issueDate).toLocaleDateString()}
+                        </p>
+                      </div> */}
                   </div>
                 )
               )
             ) : (
-              <p className="text-center text-gray-500 dark:text-gray-400 w-full">
-                No certifications available.
-              </p>
+              <div className="flex items-center justify-center w-full h-96">
+                <h2 className="text-center text-2xl md:text-3xl font-semibold text-gray-500 dark:text-gray-400">
+                  No certifications available.
+                </h2>
+              </div>
             )}
           </div>
         </div>
@@ -164,20 +166,18 @@ const CertificationsPage = () => {
           role="dialog"
         >
           <div
-            className="relative bg-white dark:bg-gray-900 rounded-xl p-6 max-w-3xl w-full mx-4 overflow-y-auto max-h-[85vh] border-2 border-[#11a0d4] shadow-xl animate-fadeIn"
+            className="relative bg-white dark:bg-gray-900 rounded-xl p-6 max-w-3xl w-full mx-4 overflow-y-auto max-h-[85vh] border-2 border-main-red shadow-xl animate-fadeIn"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Close Button */}
             <button
               onClick={closeModal}
-              className="absolute cursor-pointer top-3 right-4 text-3xl text-red-500 hover:text-red-700 transition"
+              className="absolute top-3 right-4 text-3xl text-red-500 hover:text-red-700 transition"
               title="Close"
             >
               &times;
             </button>
 
-            {/* Certificate Content */}
-            <h3 className="text-2xl font-bold text-[#11a0d4] dark:text-orange-300 mb-4 text-center">
+            <h3 className="text-2xl font-bold text-main-red dark:text-orange-300 mb-4 text-center">
               {selectedCert.title}
             </h3>
             <img
@@ -203,7 +203,7 @@ const CertificationsPage = () => {
         </div>
       )}
 
-      {/* Custom Scrollbar for Modal */}
+      {/* Custom Scrollbar & Modal Animation */}
       <style>{`
         .scrollbar-hide::-webkit-scrollbar {
           display: none;

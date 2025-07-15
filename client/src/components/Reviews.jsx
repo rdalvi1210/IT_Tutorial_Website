@@ -1,36 +1,28 @@
 import axios from "axios";
-import { jwtDecode } from "jwt-decode";
 import { ChevronLeft, ChevronRight, Star } from "lucide-react";
 import { useContext, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import { MyContext } from "../context/MyContext"; // Import your context
+import { MyContext } from "../context/MyContext";
 
 const ReviewsPage = () => {
   const scrollRef = useRef(null);
-  const { isLoginOpen, setIsLoginOpen } = useContext(MyContext); // Use context for login state
+  const { setIsLoginOpen, currentUser } = useContext(MyContext);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [reviews, setReviews] = useState([]);
-  const [currentUser, setCurrentUser] = useState(null);
   const [formData, setFormData] = useState({
     reviewer: "",
     rating: 5,
     review: "",
   });
-  const [loading, setLoading] = useState(false); // Loading state
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      try {
-        const decoded = jwtDecode(token);
-        setCurrentUser(decoded);
-        setFormData((prev) => ({ ...prev, reviewer: decoded.name || "" }));
-      } catch (err) {
-        console.error("Invalid token", err);
-        localStorage.removeItem("token");
-      }
+    if (currentUser && currentUser.name) {
+      setFormData((prev) => ({ ...prev, reviewer: currentUser.name }));
+    } else {
+      setFormData((prev) => ({ ...prev, reviewer: "" }));
     }
-  }, []);
+  }, [currentUser]);
 
   useEffect(() => {
     const fetchReviews = async () => {
@@ -45,9 +37,8 @@ const ReviewsPage = () => {
   }, []);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      scroll("right");
-    }, 5000);
+    if (reviews.length === 0) return;
+    const interval = setInterval(() => scroll("right"), 5000);
     return () => clearInterval(interval);
   }, [reviews]);
 
@@ -62,15 +53,13 @@ const ReviewsPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!currentUser) {
-      setIsLoginOpen(true); // Open login modal if not logged in
+      setIsLoginOpen(true);
       return;
     }
-    setLoading(true); // Set loading state
+
+    setLoading(true);
     try {
-      const res = await axios.post(
-        "http://localhost:5000/api/reviews",
-        formData
-      );
+      const res = await axios.post("http://localhost:5000/api/reviews", formData);
       setReviews([res.data, ...reviews]);
       setFormData({
         reviewer: currentUser.name || "Anonymous",
@@ -78,12 +67,11 @@ const ReviewsPage = () => {
         review: "",
       });
       setIsModalOpen(false);
-      toast.success("Review submitted successfully!"); // Toast notification
-    } catch (err) {
-      console.error("Error submitting review", err);
-      toast.error("Failed to submit review. Please try again."); // Toast notification
+      toast.success("Review submitted successfully!");
+    } catch {
+      toast.error("Failed to submit review.");
     } finally {
-      setLoading(false); // Reset loading state
+      setLoading(false);
     }
   };
 
@@ -98,124 +86,124 @@ const ReviewsPage = () => {
     ));
 
   const scroll = (dir) => {
-    if (!scrollRef.current) return;
-
     const container = scrollRef.current;
+    if (!container) return;
+
     const card = container.querySelector("article");
     if (!card) return;
 
-    const cardStyle = window.getComputedStyle(card);
     const cardWidth = card.offsetWidth;
-    const marginRight = parseInt(cardStyle.marginRight) || 0;
+    const style = window.getComputedStyle(card);
+    const marginRight = parseInt(style.marginRight);
     const scrollAmount = cardWidth + marginRight;
+    const maxScroll = container.scrollWidth - container.clientWidth;
 
-    const maxScrollLeft = container.scrollWidth - container.clientWidth;
-    let newScrollLeft;
+    let newLeft =
+      dir === "right"
+        ? container.scrollLeft + scrollAmount
+        : container.scrollLeft - scrollAmount;
 
-    if (dir === "right") {
-      newScrollLeft = container.scrollLeft + scrollAmount;
-      if (newScrollLeft > maxScrollLeft) {
-        newScrollLeft = 0;
-      }
-    } else {
-      newScrollLeft = container.scrollLeft - scrollAmount;
-      if (newScrollLeft < 0) {
-        newScrollLeft = maxScrollLeft;
-      }
-    }
+    if (newLeft > maxScroll) newLeft = 0;
+    if (newLeft < 0) newLeft = maxScroll;
 
-    container.scrollTo({
-      left: newScrollLeft,
-      behavior: "smooth",
-    });
+    container.scrollTo({ left: newLeft, behavior: "smooth" });
   };
 
   return (
     <section
       id="reviews"
-      className="bg-white/95 px-6 py-8 md:pt-16 min-h-[300px]"
+      className="bg-[#fff8f1] min-h-[60vh] flex justify-center items-center overflow-hidden"
     >
-      <div className="max-w-7xl mx-auto">
-        <h2 className="text-3xl md:text-5xl font-extrabold text-[#11a0d4] dark:text-white mb-12 mt-4 text-center tracking-tight drop-shadow-md">
-          Reviews
+      <div className="max-w-7xl mx-auto w-full px-4">
+        <h2 className="text-3xl md:text-5xl font-extrabold text-black mb-8 drop-shadow">
+          What our Students Say...
         </h2>
 
+        {/* Arrows and Reviews */}
         <div className="relative flex items-center">
+          {/* Left Arrow */}
           <button
             onClick={() => scroll("left")}
             aria-label="Scroll Left"
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-20 text-[#11a0d4] dark:text-indigo-300 p-2 rounded-full bg-white/80 dark:bg-gray-700/80 shadow-md hover:scale-110 transition"
+            className="absolute left-0 z-20 p-2 rounded-full bg-white/90 shadow-md hover:scale-110 transition text-main-red hidden sm:block"
           >
             <ChevronLeft size={28} />
           </button>
 
+          {/* Reviews Scroll Container */}
           <div
             ref={scrollRef}
-            className="flex overflow-x-auto space-x-6 scroll-smooth no-scrollbar px-6 w-full"
-            style={{ scrollSnapType: "x mandatory" }}
+            className="flex overflow-x-auto space-x-6 scroll-smooth no-scrollbar w-full px-1 sm:px-12"
+            style={{ scrollSnapType: "x mandatory", scrollPaddingLeft: "1rem" }}
           >
-            {reviews.map(({ _id, reviewer, rating, review, date }) => (
-              <article
-                key={_id}
-                className="w-80 flex-shrink-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm hover:shadow-lg transition scroll-snap-align-start flex flex-col"
-              >
-                <h3 className="text-lg font-semibold text-gray-700 dark:text-indigo-400 mb-2">
-                  {reviewer}
-                </h3>
-                <div className="mb-3 flex">{renderStars(rating)}</div>
-                <p className="text-gray-700 dark:text-gray-300 text-sm flex-grow">
-                  "{review}"
-                </p>
-                <time
-                  className="text-xs text-gray-500 dark:text-gray-400 mt-4 text-right italic"
-                  dateTime={new Date(date).toISOString()}
+            {reviews.length === 0 ? (
+              <div className="w-full text-center text-gray-600 text-xl font-semibold min-h-[200px] flex items-center justify-center">
+                No reviews yet
+              </div>
+            ) : (
+              reviews.map(({ _id, reviewer, rating, review, date }) => (
+                <article
+                  key={_id}
+                  className="flex-shrink-0 w-[90vw] max-w-xs sm:w-72 sm:max-w-sm bg-white border border-gray-300 shadow-md p-6 flex flex-col justify-between scroll-snap-align-start transition hover:shadow-xl"
                 >
-                  {new Date(date).toLocaleDateString(undefined, {
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric",
-                  })}
-                </time>
-              </article>
-            ))}
+                  <div className="flex flex-col flex-grow">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2 leading-snug">
+                      {reviewer}
+                    </h3>
+                    <div className="mb-4 flex">{renderStars(rating)}</div>
+                    <p className="text-base font-medium italic text-gray-800 leading-relaxed whitespace-normal break-words">
+                      “{review}”
+                    </p>
+                  </div>
+                  <time
+                    className="text-xs text-gray-500 text-right mt-5"
+                    dateTime={new Date(date).toISOString()}
+                  >
+                    {new Date(date).toLocaleDateString(undefined, {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
+                    })}
+                  </time>
+                </article>
+              ))
+            )}
           </div>
 
+          {/* Right Arrow */}
           <button
             onClick={() => scroll("right")}
             aria-label="Scroll Right"
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-20 text-[#11a0d4] dark:text-indigo-300 p-2 rounded-full bg-white/80 dark:bg-gray-700/80 shadow-md hover:scale-110 transition"
+            className="absolute right-0 z-20 p-2 rounded-full bg-white/90 shadow-md hover:scale-110 transition text-main-red hidden sm:block"
           >
             <ChevronRight size={28} />
           </button>
         </div>
 
+        {/* Leave Review Button */}
         <div className="mt-10 text-center">
           <button
-            onClick={() => {
-              if (!currentUser) {
-                setIsLoginOpen(true); // Open login modal if not logged in
-                return;
-              }
-              setIsModalOpen(true);
-            }}
-            className="text-[#11a0d4] cursor-pointer dark:text-indigo-400 underline font-medium text-base hover:text-[#874e19] dark:hover:text-indigo-300 transition"
+            onClick={() =>
+              currentUser ? setIsModalOpen(true) : setIsLoginOpen(true)
+            }
+            className="text-main-red underline text-xl md:text-2xl cursor-pointer font-semibold hover:text-hover-red transition"
           >
             Leave a review
           </button>
         </div>
       </div>
 
+      {/* Review Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-lg w-full p-10 relative shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-10 relative shadow-2xl">
             <button
               onClick={() => setIsModalOpen(false)}
-              aria-label="Close Modal"
-              className="absolute top-6 right-6 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-2xl font-bold"
+              className="absolute top-6 right-6 text-gray-600 hover:text-gray-900 text-2xl font-bold"
             >
               &times;
             </button>
-            <h3 className="text-2xl font-bold text-center text-gray-900 dark:text-white mb-6">
+            <h3 className="text-2xl font-bold text-center text-gray-900 mb-6">
               Submit Your Review
             </h3>
 
@@ -227,13 +215,11 @@ const ReviewsPage = () => {
                 placeholder="Full Name"
                 value={formData.reviewer}
                 onChange={handleChange}
-                className="w-full px-4 py-3 rounded-lg bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                className="w-full px-4 py-3 rounded-lg bg-gray-100 border border-gray-300 text-gray-900 focus:ring-2 focus:ring-main-red focus:outline-none"
               />
 
               <div className="flex items-center gap-2">
-                <span className="text-gray-600 dark:text-gray-300 font-medium">
-                  Rating:
-                </span>
+                <span className="text-gray-700 font-medium">Rating:</span>
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
                     key={star}
@@ -248,7 +234,7 @@ const ReviewsPage = () => {
                       className={`transition ${
                         formData.rating >= star
                           ? "text-yellow-400"
-                          : "text-gray-300"
+                          : "text-gray-400"
                       }`}
                       fill={formData.rating >= star ? "#facc15" : "none"}
                     />
@@ -263,22 +249,22 @@ const ReviewsPage = () => {
                 value={formData.review}
                 onChange={handleChange}
                 placeholder="Write your review..."
-                className="w-full px-4 py-3 rounded-lg bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none resize-none"
+                className="w-full px-4 py-3 rounded-lg bg-gray-100 border border-gray-300 text-gray-900 focus:ring-2 focus:ring-main-red focus:outline-none resize-none"
               />
 
               <button
                 type="submit"
-                className="w-full bg-[#11a0d4] hover:bg-[#ebb079] text-white cursor-pointer font-semibold py-3 rounded-lg transition"
-                disabled={loading} // Disable button while loading
+                className="w-full bg-main-red hover:bg-hover-red text-white font-semibold py-3 rounded-lg transition"
+                disabled={loading}
               >
-                {loading ? "Submitting..." : "Submit Review"}{" "}
-                {/* Show loading text */}
+                {loading ? "Submitting..." : "Submit Review"}
               </button>
             </form>
           </div>
         </div>
       )}
 
+      {/* Scrollbar CSS */}
       <style jsx>{`
         .no-scrollbar::-webkit-scrollbar {
           display: none;

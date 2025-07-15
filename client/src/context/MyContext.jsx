@@ -1,13 +1,22 @@
-import { createContext, useState } from "react";
-// Create the context object
+import React, { createContext, useState } from "react";
+
 export const MyContext = createContext();
-// Create the provider component
+
 export const MyContextProvider = ({ children }) => {
-  const [state, setState] = useState("Initial value");
+  const [currentUser, setCurrentUser] = useState(null);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [isRegisterOpen, setIsRegisterOpen] = useState(false);
+
   return (
     <MyContext.Provider
-      value={{ state, setState, setIsLoginOpen, isLoginOpen }}
+      value={{
+        currentUser,
+        setCurrentUser,
+        isLoginOpen,
+        setIsLoginOpen,
+        isRegisterOpen,
+        setIsRegisterOpen,
+      }}
     >
       {children}
     </MyContext.Provider>

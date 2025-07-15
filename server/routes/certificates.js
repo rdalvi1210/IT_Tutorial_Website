@@ -4,6 +4,7 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 const Certificate = require("../models/Certificates");
+const authenticate = require("../middleware/authMiddleware");
 
 // Ensure upload directory exists
 const uploadDir = path.join(__dirname, "../public/certificates");
@@ -56,6 +57,7 @@ router.get("/", async (req, res) => {
 // POST - Add certificate
 router.post(
   "/addCertificate",
+  authenticate,
   upload.single("certificate"),
   async (req, res) => {
     const { title, issuer, description, issueDate } = req.body;
@@ -83,7 +85,7 @@ router.post(
 );
 
 // DELETE certificate
-router.delete("/delete/:id", async (req, res) => {
+router.delete("/delete/:id", authenticate, async (req, res) => {
   try {
     const cert = await Certificate.findById(req.params.id);
     if (!cert) return res.status(404).json({ error: "Certificate not found" });
@@ -104,6 +106,7 @@ router.delete("/delete/:id", async (req, res) => {
 // PUT - Edit certificate by ID
 router.put(
   "/editCertificate/:id",
+  authenticate,
   upload.single("certificate"),
   async (req, res) => {
     const { title, issuer, description, issueDate } = req.body;

@@ -1,6 +1,6 @@
 const Footer = () => {
   return (
-    <footer id="footer" className="bg-[#11a0d4] text-white py-8 mt-16">
+    <footer id="footer" className="bg-main-red text-white py-8 mt-16">
       <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
         <p className="text-sm text-center md:text-left">
           &copy; {new Date().getFullYear()} KailvalyaInfotech. All rights

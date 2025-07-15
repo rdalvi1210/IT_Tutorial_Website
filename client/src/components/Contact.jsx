@@ -52,7 +52,7 @@ const ContactPage = () => {
       <div className="max-w-4xl mx-auto bg-white dark:bg-gray-900 shadow-2xl rounded-2xl overflow-hidden">
         <div className="grid grid-cols-1 md:grid-cols-2">
           {/* Left - Info */}
-          <div className="bg-[#11a0d4] text-white p-10 flex flex-col justify-center space-y-6">
+          <div className="bg-main-red text-white p-10 flex flex-col justify-center space-y-6">
             <h2 className="text-3xl font-bold">Let’s Connect</h2>
             <p className="text-indigo-100">
               Got a project or question? Fill out the form and we’ll get back to
@@ -93,8 +93,8 @@ const ContactPage = () => {
                   value={formData.name}
                   onChange={handleChange}
                   required
-                  className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none px-4 py-2"
                   placeholder="full name"
+                  className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-main-red px-4 py-2"
                 />
               </div>
 
@@ -112,8 +112,8 @@ const ContactPage = () => {
                   value={formData.email}
                   onChange={handleChange}
                   required
-                  className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none px-4 py-2"
                   placeholder="you@example.com"
+                  className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-main-red px-4 py-2"
                 />
               </div>
 
@@ -131,16 +131,16 @@ const ContactPage = () => {
                   value={formData.message}
                   onChange={handleChange}
                   required
-                  className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none px-4 py-2 resize-none"
                   placeholder="Write your message here..."
+                  className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-main-red px-4 py-2 resize-none"
                 ></textarea>
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className={`w-full cursor-pointer flex justify-center items-center bg-[#11a0d4] hover:bg-[#b47b56] text-white font-semibold py-3 rounded-md shadow-md transition ${
-                  loading ? "opacity-50 cursor-not-allowed" : ""
+                className={`w-full flex justify-center items-center bg-main-red hover:bg-hover-red text-white font-semibold py-3 rounded-md shadow-md transition ${
+                  loading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
                 }`}
               >
                 {loading ? (
