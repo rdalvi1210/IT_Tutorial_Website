@@ -208,7 +208,7 @@ const CoursesPage = () => {
                         </p>
 
                         <div className="flex items-center justify-between text-gray-600 dark:text-gray-400 text-sm sm:text-base font-medium mb-2">
-                          <span>⏳ Duration: {duration}</span>
+                          <span>⏳{duration}</span>
                           <span className="inline-block bg-indigo-100 text-main-red dark:bg-indigo-800 dark:text-white px-3 py-1 rounded-full">
                             {category}
                           </span>

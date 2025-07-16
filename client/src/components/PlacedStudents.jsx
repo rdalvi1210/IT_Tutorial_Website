@@ -23,8 +23,8 @@ const PlacedStudents = () => {
       if (slider) {
         const { scrollLeft, scrollWidth, clientWidth } = slider;
         const card = slider.querySelector(".student-card");
-        const cardWidth = card ? card.offsetWidth : 280;
-        const gap = 32;
+        const cardWidth = card ? card.offsetWidth : 240;
+        const gap = 20;
         const scrollAmount = cardWidth + gap;
 
         if (scrollLeft + clientWidth >= scrollWidth - 10) {
@@ -40,40 +40,41 @@ const PlacedStudents = () => {
   return (
     <section
       id="internships"
-      className="bg-[#fff8f1] md:min-h-[60vh] flex justify-center items-center px-4 py-8"
+      className="py-12 px-4 sm:px-6 md:px-10 lg:px-14 bg-[#fff8f1]"
     >
-      <div className="relative max-w-7xl w-full">
-        <h2 className="text-3xl md:text-5xl font-extrabold text-black dark:text-white mb-5 mt-5 md:mt-0 md:mb-0 leading-tight font-display text-center md:text-left">
+      <div className="max-w-7xl mx-auto">
+        <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-black dark:text-white mb-5">
           Our Placed Students...
         </h2>
 
         {students.length > 0 ? (
           <div
             ref={sliderRef}
-            className="flex gap-8 w-full overflow-x-auto scroll-smooth no-scrollbar py-4"
-            aria-label="Placed students carousel"
+            className="flex gap-5 sm:gap-6 md:gap-8 overflow-x-auto scroll-smooth no-scrollbar py-2"
           >
             {students.map(({ _id, name, postName, companyName, imageUrl }) => (
               <div
                 key={_id}
-                className="student-card flex-shrink-0 w-full sm:w-[280px] md:w-[32%] lg:w-[25%] bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 text-center border-2 border-main-red hover:shadow-xl transition-shadow duration-300"
+                className="student-card relative flex-shrink-0 w-[220px] sm:w-[240px] md:w-[260px] bg-gradient-to-br from-[var(--main-red)] to-[#ffd9c3] dark:from-[#ff6a3d] dark:to-[#945444] rounded-2xl shadow-lg hover:shadow-2xl transition-shadow duration-300 p-4 sm:p-5 text-center text-white"
               >
-                <div className="relative w-28 h-28 mx-auto mb-5">
+                {/* Sticker / Badge */}
+                <div className="absolute top-3 left-3 bg-white text-[10px] px-2 py-1 rounded-full font-bold text-[var(--main-red)] shadow-md uppercase tracking-wide">
+                  🔥 Achiever
+                </div>
+
+                {/* Profile Image */}
+                <div className="relative w-24 h-24 mx-auto mb-4">
                   <img
                     src={`http://localhost:5000${imageUrl}`}
                     alt={`${name} profile`}
-                    className="rounded-full object-cover w-full h-full border-4 border-[#d8c1ac] shadow-md"
+                    className="rounded-full w-full h-full object-cover border-4 border-white shadow-md"
                   />
-                  <span className="absolute inset-0 rounded-full border-2 border-main-red opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-ping" />
                 </div>
 
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-1">
-                  {name}
-                </h3>
-                <p className="text-main-red font-medium tracking-wide mb-1">
-                  {postName}
-                </p>
-                <p className="text-main-red dark:text-gray-300 text-sm">
+                {/* Name & Info */}
+                <h3 className="text-lg font-semibold mb-1 truncate">{name}</h3>
+                <p className="text-sm font-medium mb-1 truncate">{postName}</p>
+                <p className="text-xs">
                   Placed at <span className="font-semibold">{companyName}</span>
                 </p>
               </div>
@@ -88,6 +89,7 @@ const PlacedStudents = () => {
         )}
       </div>
 
+      {/* Hide Scrollbar Styling */}
       <style jsx>{`
         .no-scrollbar::-webkit-scrollbar {
           display: none;

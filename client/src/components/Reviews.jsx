@@ -17,10 +17,8 @@ const ReviewsPage = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (currentUser && currentUser.name) {
+    if (currentUser?.name) {
       setFormData((prev) => ({ ...prev, reviewer: currentUser.name }));
-    } else {
-      setFormData((prev) => ({ ...prev, reviewer: "" }));
     }
   }, [currentUser]);
 
@@ -59,7 +57,10 @@ const ReviewsPage = () => {
 
     setLoading(true);
     try {
-      const res = await axios.post("http://localhost:5000/api/reviews", formData);
+      const res = await axios.post(
+        "http://localhost:5000/api/reviews",
+        formData
+      );
       setReviews([res.data, ...reviews]);
       setFormData({
         reviewer: currentUser.name || "Anonymous",
@@ -115,25 +116,23 @@ const ReviewsPage = () => {
       className="bg-[#fff8f1] min-h-[60vh] flex justify-center items-center overflow-hidden"
     >
       <div className="max-w-7xl mx-auto w-full px-4">
-        <h2 className="text-3xl md:text-5xl font-extrabold text-black mb-8 drop-shadow">
+        <h2 className="text-3xl md:text-5xl font-extrabold text-black mb-8 text-center md:text-left">
           What our Students Say...
         </h2>
 
         {/* Arrows and Reviews */}
         <div className="relative flex items-center">
-          {/* Left Arrow */}
           <button
             onClick={() => scroll("left")}
-            aria-label="Scroll Left"
             className="absolute left-0 z-20 p-2 rounded-full bg-white/90 shadow-md hover:scale-110 transition text-main-red hidden sm:block"
+            aria-label="Scroll Left"
           >
             <ChevronLeft size={28} />
           </button>
 
-          {/* Reviews Scroll Container */}
           <div
             ref={scrollRef}
-            className="flex overflow-x-auto space-x-6 scroll-smooth no-scrollbar w-full px-1 sm:px-12"
+            className="flex overflow-x-auto space-x-6 scroll-smooth no-scrollbar w-full px-1 py-1 sm:px-12"
             style={{ scrollSnapType: "x mandatory", scrollPaddingLeft: "1rem" }}
           >
             {reviews.length === 0 ? (
@@ -144,37 +143,49 @@ const ReviewsPage = () => {
               reviews.map(({ _id, reviewer, rating, review, date }) => (
                 <article
                   key={_id}
-                  className="flex-shrink-0 w-[90vw] max-w-xs sm:w-72 sm:max-w-sm bg-white border border-gray-300 shadow-md p-6 flex flex-col justify-between scroll-snap-align-start transition hover:shadow-xl"
+                  className="flex-shrink-0 w-[90vw] max-w-xs sm:w-72 sm:max-w-sm
+                    bg-gradient-to-br from-[#fff0eb] via-[#ffe4d9] to-[#ffdad0]
+                    text-gray-800 border border-main-red
+                    shadow-md rounded-xl p-6
+                    flex flex-col justify-between
+                    scroll-snap-align-start transition-all hover:shadow-lg hover:scale-[1.02]"
                 >
                   <div className="flex flex-col flex-grow">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2 leading-snug">
+                    <h3 className="text-lg font-bold mb-2 leading-snug truncate">
                       {reviewer}
                     </h3>
-                    <div className="mb-4 flex">{renderStars(rating)}</div>
-                    <p className="text-base font-medium italic text-gray-800 leading-relaxed whitespace-normal break-words">
+                    <div className="mb-3 flex">{renderStars(rating)}</div>
+                    <p className="text-base text-main-red font-extrabold italic leading-relaxed break-words">
                       “{review}”
                     </p>
                   </div>
-                  <time
-                    className="text-xs text-gray-500 text-right mt-5"
-                    dateTime={new Date(date).toISOString()}
-                  >
-                    {new Date(date).toLocaleDateString(undefined, {
-                      year: "numeric",
-                      month: "short",
-                      day: "numeric",
-                    })}
-                  </time>
+                  <div className="flex items-center justify-between mt-3">
+                    {/* Badge */}
+                    <span className="text-xs bg-main-red text-white px-3 py-1 rounded-full font-semibold shadow-sm">
+                      Verified Student
+                    </span>
+
+                    {/* Date */}
+                    <time
+                      className="text-xs text-gray-600"
+                      dateTime={new Date(date).toISOString()}
+                    >
+                      {new Date(date).toLocaleDateString(undefined, {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </time>
+                  </div>
                 </article>
               ))
             )}
           </div>
 
-          {/* Right Arrow */}
           <button
             onClick={() => scroll("right")}
-            aria-label="Scroll Right"
             className="absolute right-0 z-20 p-2 rounded-full bg-white/90 shadow-md hover:scale-110 transition text-main-red hidden sm:block"
+            aria-label="Scroll Right"
           >
             <ChevronRight size={28} />
           </button>
@@ -264,7 +275,7 @@ const ReviewsPage = () => {
         </div>
       )}
 
-      {/* Scrollbar CSS */}
+      {/* Scrollbar and snap alignment CSS */}
       <style jsx>{`
         .no-scrollbar::-webkit-scrollbar {
           display: none;

@@ -34,7 +34,7 @@ const fileFilter = (req, file, cb) => {
   if (extname && mimetype) {
     cb(null, true);
   } else {
-    cb("Error: Only image files (jpeg, jpg, png, gif) are allowed");
+    cb(new Error("Only image files (jpeg, jpg, png, gif) are allowed"));
   }
 };
 
@@ -58,7 +58,7 @@ router.get("/", async (req, res) => {
 router.post(
   "/addCertificate",
   authenticate,
-  upload.single("certificate"),
+  upload.single("image"),
   async (req, res) => {
     const { title, issuer, description, issueDate } = req.body;
     const filePath = req.file ? `/certificates/${req.file.filename}` : null;
@@ -84,30 +84,30 @@ router.post(
   }
 );
 
-// DELETE certificate
+// DELETE certificate and remove image file
 router.delete("/delete/:id", authenticate, async (req, res) => {
   try {
     const cert = await Certificate.findById(req.params.id);
     if (!cert) return res.status(404).json({ error: "Certificate not found" });
 
-    // Delete file from server
-    const fullPath = path.join(__dirname, "..", cert.certificate);
+    // Delete image file from disk
+    const fullPath = path.join(__dirname, "../public", cert.certificate);
     if (fs.existsSync(fullPath)) {
       fs.unlinkSync(fullPath);
     }
 
     await Certificate.findByIdAndDelete(req.params.id);
-    res.json({ message: "Certificate deleted" });
+    res.json({ message: "Certificate deleted successfully" });
   } catch (err) {
     res.status(500).json({ error: "Failed to delete certificate" });
   }
 });
 
-// PUT - Edit certificate by ID
+// PUT - Edit certificate by ID (with optional image update)
 router.put(
   "/editCertificate/:id",
   authenticate,
-  upload.single("certificate"),
+  upload.single("image"),
   async (req, res) => {
     const { title, issuer, description, issueDate } = req.body;
     const certId = req.params.id;
@@ -118,12 +118,24 @@ router.put(
         return res.status(404).json({ error: "Certificate not found" });
       }
 
-      // Update fields if provided
+      // Update text fields if provided
       if (title) existingCert.title = title;
       if (issuer) existingCert.issuer = issuer;
       if (description) existingCert.description = description;
       if (issueDate) existingCert.issueDate = issueDate;
+
+      // If new image uploaded, delete old and update
       if (req.file) {
+        if (existingCert.certificate) {
+          const oldFilePath = path.join(
+            __dirname,
+            "../public",
+            existingCert.certificate
+          );
+          if (fs.existsSync(oldFilePath)) {
+            fs.unlinkSync(oldFilePath);
+          }
+        }
         existingCert.certificate = `/certificates/${req.file.filename}`;
       }
 

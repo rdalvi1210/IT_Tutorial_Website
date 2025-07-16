@@ -24,15 +24,32 @@ app.use(
 app.use(express.json());
 app.use(cookieParser()); // required to read cookies
 
-// Serve uploaded images statically
-app.use("/uploads", express.static(path.join(__dirname, "public/uploads")));
+app.use(
+  "/uploads",
+  express.static(path.join(__dirname, "public/uploads"), {
+    maxAge: "30d", // cache images for 30 days
+  })
+);
+
 app.use(
   "/placements",
-  express.static(path.join(__dirname, "public/placements"))
+  express.static(path.join(__dirname, "public/placements"), {
+    maxAge: "30d", // cache images for 30 days
+  })
 );
+
 app.use(
   "/certificates",
-  express.static(path.join(__dirname, "public/certificates"))
+  express.static(path.join(__dirname, "public/certificates"), {
+    maxAge: "30d", // cache images for 30 days
+  })
+);
+
+app.use(
+  "/banners",
+  express.static(path.join(__dirname, "public/banners"), {
+    maxAge: "30d", // cache images for 30 days
+  })
 );
 
 // API Routes
@@ -41,6 +58,7 @@ app.use("/api/auth", require("./routes/auth"));
 app.use("/api/courses", require("./routes/course"));
 app.use("/api/certificates", require("./routes/certificates"));
 app.use("/api/placements", require("./routes/placements"));
+app.use("/api/banners", require("./routes/banner"));
 
 // MongoDB connection
 mongoose

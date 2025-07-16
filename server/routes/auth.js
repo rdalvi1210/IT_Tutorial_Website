@@ -24,7 +24,6 @@ router.post("/register", async (req, res) => {
 
 // Login
 // Login Route
-
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
@@ -36,25 +35,27 @@ router.post("/login", async (req, res) => {
     if (!isMatch)
       return res.status(400).json({ message: "Invalid credentials" });
 
-    const token = jwt.sign(
-      { id: user._id, name: user.name, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" }
-    );
+    const payload = {
+      id: user._id,
+      name: user.name,
+      role: user.role,
+    };
 
-    // Set JWT token in httpOnly cookie
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // true in production
-      sameSite: "Strict",
-      maxAge: 3600000, // 1 hour
+    const token = jwt.sign(payload, process.env.JWT_SECRET, {
+      expiresIn: "1h",
     });
 
-    // Also send token in response JSON
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "Strict",
+    });
+
+    // Directly send the same payload as `user` in response
     res.status(200).json({
       message: "Login successful",
-      token: token, // <-- here you send token explicitly
-      user: { name: user.name, role: user.role },
+      token, // token sent for optional frontend decoding
+      user: payload, // safer and equivalent to req.user
     });
   } catch (err) {
     console.error("Login error:", err);
@@ -72,7 +73,7 @@ router.post("/logout", (req, res) => {
 });
 
 // GET /api/users
-router.get("/users",authenticate, async (req, res) => {
+router.get("/users", authenticate, async (req, res) => {
   try {
     const users = await User.find().select("-password"); // exclude passwords
     res.json(users);

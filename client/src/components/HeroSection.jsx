@@ -1,83 +1,99 @@
-import { useContext, useEffect, useState } from "react";
-import { MyContext } from "../context/MyContext";
+import axios from "axios";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useEffect, useState } from "react";
 
-const posters = [
-  "https://img.freepik.com/free-vector/python-programming-concept-illustration_114360-1357.jpg",
-  "https://img.freepik.com/free-vector/java-programming-concept-illustration_114360-1358.jpg",
-  "https://img.freepik.com/free-vector/c-programming-concept-illustration_114360-1359.jpg",
-  "https://img.freepik.com/free-vector/ruby-programming-concept-illustration_114360-1360.jpg",
-  "https://img.freepik.com/free-vector/php-programming-concept-illustration_114360-1361.jpg",
-  "https://img.freepik.com/free-vector/c-plus-plus-programming-concept-illustration_114360-1362.jpg",
-  "https://img.freepik.com/free-vector/go-programming-concept-illustration_114360-1363.jpg",
-  "https://img.freepik.com/free-vector/swift-programming-concept-illustration_114360-1364.jpg",
-  "https://img.freepik.com/free-vector/typescript-programming-concept-illustration_114360-1365.jpg",
-  "https://img.freepik.com/free-vector/kotlin-programming-concept-illustration_114360-1366.jpg",
-];
+const ImageSlider = () => {
+  const [banners, setBanners] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
-const HeroSection = () => {
-  const [currentPoster, setCurrentPoster] = useState(0);
-
-  const { setIsLoginOpen } = useContext(MyContext);
-
+  // Fetch banners from backend
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentPoster((prev) => (prev + 1) % posters.length);
-    }, 6000);
-    return () => clearInterval(interval);
+    const fetchBanners = async () => {
+      try {
+        const res = await axios.get("http://localhost:5000/api/banners");
+        setBanners(res.data);
+      } catch (err) {
+        console.error("Failed to load banners:", err);
+      }
+    };
+    fetchBanners();
   }, []);
 
+  // Auto slide every 6 seconds
+  useEffect(() => {
+    if (banners.length === 0) return;
+
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % banners.length);
+    }, 6000);
+
+    return () => clearInterval(interval);
+  }, [banners]);
+
+  const nextSlide = () =>
+    setCurrentIndex((prev) => (prev + 1) % banners.length);
+  const prevSlide = () =>
+    setCurrentIndex((prev) => (prev === 0 ? banners.length - 1 : prev - 1));
+
+  if (banners.length === 0) {
+    return (
+      <div className="h-[300px] sm:h-[400px] md:h-[500px] flex items-center justify-center bg-gray-100 text-gray-500">
+        Loading banners...
+      </div>
+    );
+  }
+
   return (
-    <section className="relative min-h-[90vh] flex items-center overflow-hidden bg-[#fff8f1] dark:bg-gray-900">
-      {/* Background Slider */}
+    <section className="relative w-full overflow-hidden h-[250px] sm:h-[400px] md:h-[500px] bg-black">
+      {/* Slides */}
       <div className="absolute inset-0 z-0">
-        {posters.map((src, index) => (
+        {banners.map((banner, index) => (
+          // 1600px × 500px
           <img
             key={index}
-            src={src}
-            alt={`Background poster ${index + 1}`}
-            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-[1500ms] ease-in-out
-              ${index === currentPoster ? "opacity-100" : "opacity-0"}`}
-            style={{ willChange: "opacity" }}
+            src={`http://localhost:5000${banner.imageUrl}`}
+            alt={`Banner ${index + 1}`}
+            loading="lazy"
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-[1500ms] ease-in-out ${
+              index === currentIndex ? "opacity-100" : "opacity-0"
+            }`}
           />
         ))}
-        {/* Overlay Gradient for readability */}
-        <div className="absolute inset-0 bg-gradient-to-br from-white/90 to-indigo-100/80 dark:from-gray-900/90 dark:to-gray-800/80" />
       </div>
 
-      {/* Content */}
-      <div className="relative z-10 max-w-7xl mx-auto px-6 py-20 flex flex-col md:flex-row items-center justify-between gap-10 w-full">
-        {/* Text */}
-        <div className="flex-1 text-center md:text-left">
-          <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight text-gray-900 dark:text-white">
-            Learn, Build, and Grow with <br />
-            <span className="text-main-red">Kaivalya Infotech</span>
-          </h1>
-          <p className="text-lg mb-8 max-w-2xl mx-auto md:mx-0 text-gray-700 dark:text-gray-300">
-            Master Programming from Basics to Advanced. Learn C, C++, .NET, PHP,
-            HTML, CSS, JavaScript & more. Build real-world projects guided by
-            expert mentors. Guaranteed Internship Assurance for every learner.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 sm:items-center sm:justify-start justify-center">
-            <a
-              href="#courses"
-              className="cursor-pointer px-6 py-3 rounded-lg font-semibold shadow bg-main-red text-white hover:bg-hover-red transition"
-            >
-              View Courses
-            </a>
-          </div>
-        </div>
+      {/* Overlay (optional gradient) */}
+      <div className="absolute inset-0 bg-black/20 backdrop-brightness-[0.9] z-10 pointer-events-none" />
 
-        {/* Side Image */}
-        <div className="hidden md:flex-1 md:flex justify-end">
-          <img
-            src="https://illustrations.popsy.co/gray/web-design.svg"
-            alt="Hero Illustration"
-            className="w-full max-w-md"
+      {/* Arrows */}
+      <button
+        onClick={prevSlide}
+        className="absolute top-1/2 left-2 sm:left-4 z-20 -translate-y-1/2 bg-white/70 hover:bg-white p-2 rounded-full transition shadow-md"
+      >
+        <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 text-black" />
+      </button>
+      <button
+        onClick={nextSlide}
+        className="absolute top-1/2 right-2 sm:right-4 z-20 -translate-y-1/2 bg-white/70 hover:bg-white p-2 rounded-full transition shadow-md"
+      >
+        <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 text-black" />
+      </button>
+
+      {/* Dots */}
+      <div className="absolute bottom-3 sm:bottom-5 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+        {banners.map((_, index) => (
+          <div
+            key={index}
+            onClick={() => setCurrentIndex(index)}
+            className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full transition cursor-pointer ${
+              index === currentIndex
+                ? "bg-white"
+                : "bg-white/40 hover:bg-white/60"
+            }`}
           />
-        </div>
+        ))}
       </div>
     </section>
   );
 };
 
-export default HeroSection;
+export default ImageSlider;

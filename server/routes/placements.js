@@ -84,7 +84,7 @@ router.delete("/delete/:id", async (req, res) => {
     if (!placement)
       return res.status(404).json({ error: "Placement not found" });
 
-    const fullPath = path.join(__dirname, "..", placement.imageUrl);
+    const fullPath = path.join(__dirname, "../public", placement.imageUrl);
     if (fs.existsSync(fullPath)) {
       fs.unlinkSync(fullPath);
     }

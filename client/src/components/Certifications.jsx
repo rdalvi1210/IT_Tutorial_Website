@@ -128,7 +128,7 @@ const CertificationsPage = () => {
                       <img
                         src={`http://localhost:5000${certificate}`}
                         alt={`${title} certificate`}
-                        className="w-full h-full object-cover object-center pointer-events-none select-none"
+                        className="w-full h-full object-contain object-center pointer-events-none select-none"
                         loading="lazy"
                         draggable={false}
                       />
