@@ -6,6 +6,29 @@ import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { MyContext } from "../context/MyContext";
 
+const Spinner = () => (
+  <svg
+    className="animate-spin h-5 w-5 text-white mx-auto"
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+  >
+    <circle
+      className="opacity-25"
+      cx="12"
+      cy="12"
+      r="10"
+      stroke="currentColor"
+      strokeWidth="4"
+    ></circle>
+    <path
+      className="opacity-75"
+      fill="currentColor"
+      d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+    ></path>
+  </svg>
+);
+
 const Navbar = () => {
   const {
     currentUser,
@@ -27,7 +50,20 @@ const Navbar = () => {
     password: "",
   });
 
-  // ⏪ Load from sessionStorage on mount
+  const [isVerified, setIsVerified] = useState(false);
+  const [otpModal, setOtpModal] = useState(false);
+  const [otp, setOtp] = useState("");
+
+  // Timer states for OTP resend
+  const [otpTimer, setOtpTimer] = useState(0);
+  const [resendDisabled, setResendDisabled] = useState(false);
+
+  // Loading states
+  const [loginLoading, setLoginLoading] = useState(false);
+  const [registerLoading, setRegisterLoading] = useState(false);
+  const [sendOtpLoading, setSendOtpLoading] = useState(false);
+  const [verifyOtpLoading, setVerifyOtpLoading] = useState(false);
+
   useEffect(() => {
     const token = sessionStorage.getItem("token");
     if (token) {
@@ -47,8 +83,23 @@ const Navbar = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // OTP resend countdown timer effect
+  useEffect(() => {
+    let timer;
+    if (resendDisabled && otpTimer > 0) {
+      timer = setInterval(() => {
+        setOtpTimer((prev) => prev - 1);
+      }, 1000);
+    }
+    if (otpTimer === 0 && resendDisabled) {
+      setResendDisabled(false);
+    }
+    return () => clearInterval(timer);
+  }, [resendDisabled, otpTimer]);
+
   const handleLogin = async (e) => {
     e.preventDefault();
+    setLoginLoading(true);
     try {
       const res = await axios.post(
         "http://localhost:5000/api/auth/login",
@@ -69,18 +120,50 @@ const Navbar = () => {
       }
     } catch (error) {
       toast.error("Login failed. Please check your credentials.");
+    } finally {
+      setLoginLoading(false);
     }
   };
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    setRegisterLoading(true);
     try {
       await axios.post("http://localhost:5000/api/auth/register", registerData);
       toast.success("Registration successful!");
       setIsRegisterOpen(false);
       setRegisterData({ name: "", email: "", password: "" });
+      setIsVerified(false);
     } catch (err) {
       toast.error("Registration failed. Try a different email.");
+    } finally {
+      setRegisterLoading(false);
+    }
+  };
+
+  const handleSendOtp = async () => {
+    if (!registerData.email) {
+      toast.error("Please enter email first.");
+      return;
+    }
+
+    setSendOtpLoading(true);
+    try {
+      await axios.post(
+        "http://localhost:5000/api/auth/send-otp",
+        { email: registerData.email },
+        { withCredentials: true }
+      );
+      toast.success("OTP sent to email!");
+      setOtpModal(true);
+      setResendDisabled(true);
+      setOtpTimer(60); // start 60 seconds timer
+    } catch (err) {
+      const errorMessage =
+        err.response?.data?.message || "Failed to send OTP. Try again.";
+      toast.error(errorMessage);
+    } finally {
+      setSendOtpLoading(false);
     }
   };
 
@@ -122,7 +205,7 @@ const Navbar = () => {
               onClick={() => navigate("/")}
               className="text-2xl font-extrabold text-main-red hover:text-hover-red cursor-pointer tracking-wide"
             >
-              KAIVALYA <span className="font-bold">INFOTECH</span>
+              KAIVALYA <span className="font-bold text-black">INFOTECH</span>
             </div>
 
             <div className="hidden md:flex space-x-8">
@@ -161,15 +244,17 @@ const Navbar = () => {
                 <>
                   <button
                     onClick={() => setIsLoginOpen(true)}
-                    className="px-4 py-2 border border-main-red text-main-red rounded hover:bg-main-red-10 transition"
+                    className="px-4 py-2 border border-main-red text-main-red rounded hover:bg-main-red-10 transition flex justify-center items-center"
+                    disabled={loginLoading}
                   >
-                    Login
+                    {loginLoading ? <Spinner /> : "Login"}
                   </button>
                   <button
                     onClick={() => setIsRegisterOpen(true)}
-                    className="px-4 py-2 bg-main-red text-white font-semibold rounded hover:bg-hover-red transition"
+                    className="px-4 py-2 bg-main-red text-white font-semibold rounded hover:bg-hover-red transition flex justify-center items-center"
+                    disabled={registerLoading}
                   >
-                    Register
+                    {registerLoading ? <Spinner /> : "Register"}
                   </button>
                 </>
               )}
@@ -186,7 +271,6 @@ const Navbar = () => {
           </div>
         </div>
 
-        {/* Mobile Menu */}
         <div
           className={`fixed inset-0 z-50 bg-white shadow-lg transition-transform duration-300 transform ${
             menuOpen ? "translate-x-0" : "-translate-x-full"
@@ -267,6 +351,7 @@ const Navbar = () => {
             <button
               onClick={() => setIsLoginOpen(false)}
               className="absolute top-3 right-4 text-2xl text-gray-500"
+              disabled={loginLoading}
             >
               &times;
             </button>
@@ -281,6 +366,7 @@ const Navbar = () => {
                   setLoginData({ ...loginData, email: e.target.value })
                 }
                 className="w-full px-4 py-2 rounded border bg-gray-50 text-black"
+                disabled={loginLoading}
               />
               <input
                 type="password"
@@ -291,12 +377,14 @@ const Navbar = () => {
                   setLoginData({ ...loginData, password: e.target.value })
                 }
                 className="w-full px-4 py-2 rounded border bg-gray-50 text-black"
+                disabled={loginLoading}
               />
               <button
                 type="submit"
-                className="w-full py-2 bg-main-red text-white rounded hover:bg-hover-red transition"
+                className="w-full py-2 bg-main-red text-white rounded hover:bg-hover-red transition flex justify-center items-center"
+                disabled={loginLoading}
               >
-                Login
+                {loginLoading ? <Spinner /> : "Login"}
               </button>
               <p className="text-center text-sm text-gray-500">
                 Don't have an account?{" "}
@@ -320,8 +408,17 @@ const Navbar = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md">
           <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-md relative">
             <button
-              onClick={() => setIsRegisterOpen(false)}
+              onClick={() => {
+                setIsRegisterOpen(false);
+                setRegisterData({
+                  name: "",
+                  email: "",
+                  password: "",
+                });
+                setIsVerified(false);
+              }}
               className="absolute top-3 right-4 text-2xl text-gray-500"
+              disabled={registerLoading}
             >
               &times;
             </button>
@@ -336,17 +433,46 @@ const Navbar = () => {
                   setRegisterData({ ...registerData, name: e.target.value })
                 }
                 className="w-full px-4 py-2 rounded border bg-gray-50 text-black"
+                disabled={registerLoading}
               />
-              <input
-                type="email"
-                placeholder="Email"
-                required
-                value={registerData.email}
-                onChange={(e) =>
-                  setRegisterData({ ...registerData, email: e.target.value })
-                }
-                className="w-full px-4 py-2 rounded border bg-gray-50 text-black"
-              />
+              <div className="flex gap-2">
+                <input
+                  type="email"
+                  placeholder="Email"
+                  required
+                  value={registerData.email}
+                  onChange={(e) => {
+                    setRegisterData({ ...registerData, email: e.target.value });
+                    setIsVerified(false);
+                  }}
+                  className="w-full px-4 py-2 rounded border bg-gray-50 text-black"
+                  disabled={registerLoading || sendOtpLoading}
+                />
+                {isVerified ? (
+                  <span className="text-green-600 font-semibold flex items-center">
+                    ✅
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    className={`text-sm px-3 py-1 rounded transition flex justify-center items-center ${
+                      resendDisabled
+                        ? "bg-gray-400 text-white cursor-not-allowed"
+                        : "bg-main-red text-white hover:bg-hover-red"
+                    }`}
+                    onClick={handleSendOtp}
+                    disabled={resendDisabled || sendOtpLoading}
+                  >
+                    {sendOtpLoading ? (
+                      <Spinner />
+                    ) : resendDisabled ? (
+                      `Retry in ${otpTimer}s`
+                    ) : (
+                      "Verify"
+                    )}
+                  </button>
+                )}
+              </div>
               <input
                 type="password"
                 placeholder="Password"
@@ -356,12 +482,18 @@ const Navbar = () => {
                   setRegisterData({ ...registerData, password: e.target.value })
                 }
                 className="w-full px-4 py-2 rounded border bg-gray-50 text-black"
+                disabled={registerLoading}
               />
               <button
                 type="submit"
-                className="w-full py-2 bg-main-red text-white rounded hover:bg-hover-red transition"
+                disabled={!isVerified || registerLoading}
+                className={`w-full py-2 flex justify-center items-center ${
+                  isVerified
+                    ? "bg-main-red text-white hover:bg-hover-red"
+                    : "bg-gray-300 text-gray-600 cursor-not-allowed"
+                } rounded transition`}
               >
-                Register
+                {registerLoading ? <Spinner /> : "Register"}
               </button>
               <p className="text-center text-sm text-gray-500">
                 Already have an account?{" "}
@@ -375,6 +507,63 @@ const Navbar = () => {
                   Login here
                 </span>
               </p>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* OTP Modal */}
+      {otpModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md">
+          <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-sm relative">
+            <button
+              onClick={() => setOtpModal(false)}
+              className="absolute top-3 right-4 text-2xl text-gray-500"
+              disabled={verifyOtpLoading}
+            >
+              &times;
+            </button>
+            <h3 className="text-lg font-bold mb-4 text-black">Enter OTP</h3>
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                setVerifyOtpLoading(true);
+                try {
+                  const res = await axios.post(
+                    "http://localhost:5000/api/auth/verify-otp",
+                    { email: registerData.email, otp }
+                  );
+                  if (res.data.success) {
+                    toast.success("Email verified successfully!");
+                    setIsVerified(true);
+                    setOtpModal(false);
+                  } else {
+                    toast.error("Invalid OTP");
+                  }
+                } catch (err) {
+                  toast.error("Verification failed");
+                } finally {
+                  setVerifyOtpLoading(false);
+                }
+              }}
+              className="space-y-4"
+            >
+              <input
+                type="text"
+                placeholder="Enter OTP"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+                className="w-full px-4 py-2 rounded border bg-gray-50 text-black"
+                required
+                disabled={verifyOtpLoading}
+              />
+              <button
+                type="submit"
+                className="w-full py-2 bg-main-red text-white rounded hover:bg-hover-red transition flex justify-center items-center"
+                disabled={verifyOtpLoading}
+              >
+                {verifyOtpLoading ? <Spinner /> : "Verify OTP"}
+              </button>
             </form>
           </div>
         </div>

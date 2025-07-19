@@ -153,8 +153,6 @@ const Admin = () => {
   };
 
   // Add/Edit handlers
-
-  // Generic function to handle Add/Edit with image upload (for courses, certificates, placements, banners)
   const handleAddEdit = async (type) => {
     let url = "";
     let dataToSend;
@@ -482,7 +480,7 @@ const Admin = () => {
             Add Certificate
           </button>
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols- 2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {certificates.map((cert) => (
             <div
               key={cert._id}
@@ -769,7 +767,7 @@ const Admin = () => {
                         issueDate: e.target.value,
                       })
                     }
-                    required
+                    {...(!editId ? { required: true } : {})}
                     className="border p-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-orange-400"
                   />
                   <input
