@@ -52,7 +52,7 @@ const PlacedStudents = () => {
             ref={sliderRef}
             className="flex gap-5 sm:gap-6 md:gap-8 overflow-x-auto scroll-smooth no-scrollbar py-2"
           >
-            {students.map(({ _id, name, postName, companyName, imageUrl }) => (
+            {students?.map(({ _id, name, postName, companyName, imageUrl }) => (
               <div
                 key={_id}
                 className="student-card relative flex-shrink-0 w-[220px] sm:w-[240px] md:w-[260px] bg-gradient-to-br from-[var(--main-red)] to-[#ffd9c3] dark:from-[#ff6a3d] dark:to-[#945444] rounded-2xl shadow-lg hover:shadow-2xl transition-shadow duration-300 p-4 sm:p-5 text-center text-white"

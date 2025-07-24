@@ -156,7 +156,7 @@ const CoursesPage = () => {
               onTouchMove={handleTouchMove}
               onTouchEnd={handleTouchEnd}
             >
-              {courses.map((course) => {
+              {courses?.map((course) => {
                 const { id, title, description, category, imageUrl, duration } =
                   course;
                 return (

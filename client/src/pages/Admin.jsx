@@ -432,7 +432,7 @@ const Admin = () => {
           </button>
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {courses.map((course) => (
+          {courses?.map((course) => (
             <div
               key={course._id}
               className="border p-4 rounded shadow hover:shadow-lg relative"
@@ -487,7 +487,7 @@ const Admin = () => {
               className="border p-4 rounded shadow hover:shadow-lg relative"
             >
               <img
-                src={`http://localhost:5000${cert.certificate}`}
+                src={cert.certificateUrl}
                 alt={cert.title}
                 className="w-full h-40 object-cover rounded mb-2"
               />
@@ -771,6 +771,7 @@ const Admin = () => {
                     className="border p-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-orange-400"
                   />
                   <input
+                    name="image"
                     type="file"
                     accept="image/*"
                     onChange={(e) => setCertificateFile(e.target.files[0])}
@@ -846,6 +847,7 @@ const Admin = () => {
                     className="border p-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-orange-400"
                   />
                   <input
+                    name="image"
                     type="file"
                     accept="image/*"
                     onChange={(e) => setPlacementImageFile(e.target.files[0])}

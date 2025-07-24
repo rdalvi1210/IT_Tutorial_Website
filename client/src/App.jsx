@@ -1,4 +1,4 @@
-import { ArrowUp } from "lucide-react"; // <-- Import icon here
+import { ArrowUp } from "lucide-react";
 import { useContext, useEffect, useState } from "react";
 import { Toaster } from "react-hot-toast";
 import {
@@ -14,21 +14,16 @@ import Admin from "./pages/Admin";
 import Home from "./pages/Home";
 
 const App = () => {
-  const { currentUser } = useContext(MyContext);
+  const { currentUser, appLoading } = useContext(MyContext);
 
   const [showTopBtn, setShowTopBtn] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
-      if (window.pageYOffset > 200) {
-        setShowTopBtn(true);
-      } else {
-        setShowTopBtn(false);
-      }
+      setShowTopBtn(window.pageYOffset > 200);
     };
 
     window.addEventListener("scroll", handleScroll);
-
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -36,15 +31,21 @@ const App = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const Spinner = () => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="h-12 w-12 border-4 border-white border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
+
   return (
     <Router>
       <Toaster position="top-center" reverseOrder={false} />
+      {appLoading && <Spinner />}
       <Navbar />
 
-      <div className="">
+      <div>
         <Routes>
           <Route path="/" element={<Home />} />
-
           <Route
             path="/admin"
             element={
