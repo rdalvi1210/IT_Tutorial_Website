@@ -32,7 +32,7 @@ const App = () => {
   };
 
   const Spinner = () => (
-    <div className="fixed inset-0 bg-white/50 dark:bg-black/50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-white flex items-center justify-center z-50">
       <div className="h-12 w-12 border-4 border-black dark:border-white border-t-transparent rounded-full animate-spin" />
     </div>
   );
