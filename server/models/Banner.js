@@ -6,6 +6,10 @@ const bannerSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    cloudinaryPublicId: {
+      type: String,
+      required: true,
+    },
   },
   { timestamps: true }
 );

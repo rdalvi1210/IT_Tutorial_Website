@@ -6,6 +6,7 @@ const courseSchema = new mongoose.Schema({
   duration: String,
   category: String,
   imageUrl: String,
+  imagePublicId: String, // required for deletion from Cloudinary
 });
 
 module.exports = mongoose.model("Course", courseSchema);

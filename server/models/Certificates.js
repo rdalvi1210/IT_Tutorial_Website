@@ -17,8 +17,12 @@ const certificateSchema = new mongoose.Schema({
     type: Date,
     required: true,
   },
-  certificate: {
-    type: String, // Path or URL to uploaded PDF
+  certificateUrl: {
+    type: String, // Cloudinary secure URL
+    required: true,
+  },
+  certificatePublicId: {
+    type: String, // Cloudinary public_id for deletion
     required: true,
   },
 });

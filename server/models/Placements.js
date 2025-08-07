@@ -18,6 +18,7 @@ const placementSchema = new mongoose.Schema(
       type: String, // URL or path to the stored image file
       required: true,
     },
+    imagePublicId: String,
   },
   {
     timestamps: true,

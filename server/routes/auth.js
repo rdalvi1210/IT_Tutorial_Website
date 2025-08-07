@@ -144,7 +144,7 @@ router.post("/logout", (req, res) => {
 });
 
 // GET /api/users
-router.get("/users", authenticate, async (req, res) => {
+router.get("/users", async (req, res) => {
   try {
     const users = await User.find().select("-password"); // exclude passwords
     res.json(users);
