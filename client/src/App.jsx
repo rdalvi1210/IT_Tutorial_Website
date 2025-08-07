@@ -12,6 +12,7 @@ import Navbar from "./components/Navbar";
 import { MyContext } from "./context/MyContext";
 import Admin from "./pages/Admin";
 import Home from "./pages/Home";
+import Pagenotfound from "./pages/Pagenotfound";
 
 const App = () => {
   const { currentUser, appLoading } = useContext(MyContext);
@@ -32,7 +33,7 @@ const App = () => {
   };
 
   const Spinner = () => (
-    <div className="fixed inset-0 bg-white flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-white/50 dark:bg-black/50 flex items-center justify-center z-50">
       <div className="h-12 w-12 border-4 border-black dark:border-white border-t-transparent rounded-full animate-spin" />
     </div>
   );
@@ -46,6 +47,7 @@ const App = () => {
       <div>
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/*" element={<Pagenotfound />} />
           <Route
             path="/admin"
             element={
